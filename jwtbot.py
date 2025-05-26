@@ -17,8 +17,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "and I will generate JWT tokens for each pair.\n\n"
         "The JSON format should be:\n"
         '[{"uid": "123", "password": "abc"}, ...]\n\n'
-        "Bot Owner: @J4tnx\n"
-        "Credit: @MominTip"
+        "Bot Owner: @MominTip\n"
+        
     )
 
 async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
