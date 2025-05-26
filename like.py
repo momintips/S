@@ -56,7 +56,7 @@ async def handle_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if message[0].lower() == "/spam" and len(message) == 3 and message[1].lower() == "bd":
         cmd = "spam"
         uid = message[2]
-        api_url = f"https://momin-spam-api.onrender.com/send_requests?uid={uid}"
+        api_url = f"https://momin-spam-api.vercel.app/send_requests?uid={uid}"
     elif message[0].lower() == "/like" and len(message) >= 3:
         cmd = "like"
         region = message[1].lower()
