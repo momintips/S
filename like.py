@@ -17,6 +17,7 @@ GROUP_LINK = f"https://t.me/{GROUP_USERNAME}"
 user_last_used = {}
 
 async def is_user_verified(bot, user_id):
+    """Check if user is member of our group"""
     try:
         # Try both with and without @ symbol for better compatibility
         try:
@@ -40,6 +41,11 @@ def verification_markup():
 async def handle_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     
+    # Check if command is being used in the correct group
+    if update.effective_chat.username and update.effective_chat.username.lower() != GROUP_USERNAME.lower():
+        await update.message.reply_text(f"❌ This bot can only be used in @{GROUP_USERNAME} group!")
+        return
+        
     if not update.message or not update.message.text:
         await update.message.reply_text("❌ Invalid command format!")
         return
@@ -168,6 +174,11 @@ async def verify_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     try:
+        # Check if the verification is happening in the correct group
+        if query.message.chat.username and query.message.chat.username.lower() != GROUP_USERNAME.lower():
+            await query.edit_message_text(f"❌ Verification can only be done in @{GROUP_USERNAME} group!")
+            return
+
         # Double check with delay
         is_verified = await is_user_verified(context.bot, query.from_user.id)
         if not is_verified:
@@ -196,5 +207,5 @@ if __name__ == '__main__':
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler(["like", "spam"], handle_command))
     app.add_handler(CallbackQueryHandler(verify_button))
-    print("🔥 Bot is running with corrected spam reporting...")
+    print("🔥 Bot is running with corrected group verification...")
     app.run_polling()
