@@ -7,8 +7,6 @@ from telegram.ext import (
     CommandHandler,
     CallbackQueryHandler,
     ContextTypes,
-    MessageHandler,
-    filters
 )
 
 BOT_TOKEN = '8150096244:AAFPsLFYaA9PsOesrE5TiyvaeBHhBwPU7s4'
@@ -16,31 +14,17 @@ GROUP_USERNAME = "momin_46"
 OWNER_HANDLE = "@momintip"
 GROUP_LINK = f"https://t.me/{GROUP_USERNAME}"
 
-# Store user last command time and verification status
 user_last_used = {}
-user_verified_cache = {}
 
 async def is_user_verified(bot, user_id):
-    # Check cache first
-    if user_id in user_verified_cache:
-        if time.time() - user_verified_cache[user_id]['timestamp'] < 60:  # Cache for 1 minute
-            return user_verified_cache[user_id]['status']
-    
     try:
         # Try both with and without @ symbol for better compatibility
         try:
             member = await bot.get_chat_member(chat_id=f"@{GROUP_USERNAME}", user_id=user_id)
-            status = member.status in ["member", "administrator", "creator"]
+            return member.status in ["member", "administrator", "creator"]
         except:
             member = await bot.get_chat_member(chat_id=GROUP_USERNAME, user_id=user_id)
-            status = member.status in ["member", "administrator", "creator"]
-        
-        # Update cache
-        user_verified_cache[user_id] = {
-            'status': status,
-            'timestamp': time.time()
-        }
-        return status
+            return member.status in ["member", "administrator", "creator"]
     except Exception as e:
         print(f"Verification error: {e}")
         return False
@@ -54,11 +38,6 @@ def verification_markup():
     ])
 
 async def handle_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Check if command is in private chat
-    if update.message.chat.type != "private":
-        await update.message.reply_text("⚠️ Please use this bot in private chat with me!")
-        return
-
     user = update.effective_user
     
     if not update.message or not update.message.text:
@@ -96,7 +75,7 @@ async def handle_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"⏳ Please wait {remaining}s before next command.")
         return
 
-    # Group verification with retry and cache
+    # Group verification with retry
     is_verified = await is_user_verified(context.bot, user.id)
     if not is_verified:
         await asyncio.sleep(2)
@@ -189,10 +168,6 @@ async def verify_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     try:
-        # Clear cache for this user to force fresh verification
-        if query.from_user.id in user_verified_cache:
-            del user_verified_cache[query.from_user.id]
-            
         # Double check with delay
         is_verified = await is_user_verified(context.bot, query.from_user.id)
         if not is_verified:
@@ -217,22 +192,9 @@ async def verify_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=verification_markup()
         )
 
-async def handle_group_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Ignore messages in groups unless they're verification requests
-    pass
-
-def main():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-    
-    # Only allow commands in private chats
-    app.add_handler(CommandHandler(["like", "spam"], handle_command, filters.ChatType.PRIVATE))
-    app.add_handler(CallbackQueryHandler(verify_button))
-    
-    # Handle group messages (do nothing)
-    app.add_handler(MessageHandler(filters.ChatType.GROUPS, handle_group_message))
-    
-    print("🔥 Bot is running with improved group verification...")
-    app.run_polling()
-
 if __name__ == '__main__':
-    main()
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler(["like", "spam"], handle_command))
+    app.add_handler(CallbackQueryHandler(verify_button))
+    print("🔥 Bot is running with corrected spam reporting...")
+    app.run_polling()
