@@ -221,7 +221,7 @@ async def handle_group_message(update: Update, context: ContextTypes.DEFAULT_TYP
     # Ignore messages in groups unless they're verification requests
     pass
 
-if __name__ == '__main__':
+def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     
     # Only allow commands in private chats
@@ -233,3 +233,6 @@ if __name__ == '__main__':
     
     print("🔥 Bot is running with improved group verification...")
     app.run_polling()
+
+if __name__ == '__main__':
+    main()
