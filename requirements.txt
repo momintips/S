@@ -24,3 +24,4 @@ python-dotenv
 python-dateutil
 pandas
 numpy
+datetime
